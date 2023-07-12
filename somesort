@@ -1,2 +1,39 @@
-afssgfdgfdfgg
-hgcghfjchghh
+import pandas as pd
+
+# Load the Excel file into a pandas DataFrame
+df = pd.read_excel('knowledge_base.xlsx')
+
+def get_answer(question):
+    global df
+    keyword = None
+    answer = None
+
+    # Check if the question is already present in the DataFrame
+    if question in df['Question'].values:
+        answer = df.loc[df['Question'] == question, 'Answer'].iloc[0]
+    else:
+        # Search for keywords in the question
+        for idx, row in df.iterrows():
+            if row['Keyword'] in question:
+                keyword = row['Keyword']
+                answer = row['Answer']
+                break
+
+        # If a keyword is found, add the question to the DataFrame
+        if keyword is not None:
+            new_row = {'Keyword': keyword, 'Question': question, 'Answer': answer}
+            df = df.append(new_row, ignore_index=True)
+            # Save the updated DataFrame back to the Excel file
+            df.to_excel('knowledge_base.xlsx', index=False)
+
+    return answer
+
+# Test the chatbot
+while True:
+    user_input = input('User: ')
+    response = get_answer(user_input)
+    if response is not None:
+        print('Bot:', response)
+    else:
+        print('Bot: I apologize, but I don\'t have an answer to that. Can you please provide more details?')
+
