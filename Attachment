@@ -67,3 +67,34 @@ print("Attachments saved successfully.")
             attachment.SaveAsFile(os.path.join(folder_location, attachment.FileName))
 
 print("Attachments saved successfully.")
+
+
+
+
+
+
+
+
+
+
+
+import os
+import win32com.client
+
+def save_attachments(sender_email, subject_keyword, save_path):
+    outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
+    inbox = outlook.GetDefaultFolder(6)  # 6 represents the Inbox folder
+
+    for item in inbox.Items:
+        if item.Class == 43:  # 43 represents a mail item
+            if sender_email in item.SenderEmailAddress.lower() and subject_keyword.lower() in item.Subject.lower():
+                attachments = item.Attachments
+                for attachment in attachments:
+                    attachment.SaveAsFile(os.path.join(save_path, attachment.FileName))
+
+# Example usage:
+sender_email = "example@example.com"
+subject_keyword = "Important Document"
+save_path = "C:/path/to/save/folder"
+
+save_attachments(sender_email, subject_keyword, save_path)
