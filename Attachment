@@ -1,3 +1,25 @@
+2import pandas as pd
+import win32com.client
+import os
+
+# Load the Excel file into a pandas DataFrame
+excel_file = 'path_to_your_excel_file.xlsx'
+df = pd.read_excel(excel_file)
+
+# Connect to Outlook
+outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
+
+# Replace 'SubfolderName' with the name of the subfolder where you want to check for emails
+inbox = outlook.GetDefaultFolder(6).Folders['SubfolderName'].Items
+
+# Loop through each email in the subfolder
+for email in inbox:
+    sender = email.SenderEmailAddress
+    subject = email.Subject
+
+
+
+
 import pandas as pd
 import win32com.client
 import os
@@ -16,6 +38,22 @@ inbox = outlook.GetDefaultFolder(6).Folders['SubfolderName'].Items
 for email in inbox:
     sender = email.SenderEmailAddress
     subject = email.Subject
+
+    # Check if the combination of sender and subject exists in the DataFrame
+    matched_row = df[(df['SenderName'] == sender) & (df['Subject'] == subject)]
+
+    if not matched_row.empty:
+        # Get the folder location from the first matched row
+        folder_location = os.path.expanduser(matched_row.iloc[0]['FolderLocation'])
+
+        # Save the attachments in the corresponding location
+        for attachment in email.Attachments:
+            attachment_filename = os.path.join(folder_location, attachment.FileName)
+            attachment.SaveAsFile(attachment_filename)
+            print(f"Attachment '{attachment.FileName}' saved to '{attachment_filename}'")
+
+print("Attachments saved successfully.")
+
 
     # Check if the combination of sender and subject exists in the DataFrame
     matched_row = df[(df['SenderName'] == sender) & (df['Subject'] == subject)]
